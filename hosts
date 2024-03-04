@@ -1,0 +1,5 @@
+[mcwebserver]
+minecraft.casahouse.pt ansible_user=peter
+
+[localwebserver]
+192.168.56.101 ansible_user=vagrant

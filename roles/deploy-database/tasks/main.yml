@@ -1,0 +1,23 @@
+---
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+
+- name: Install MySQL server
+  apt:
+    name: mysql-server 
+    state: present
+
+# this command only works the first time it is run since it 
+# relies on not havig a mysql password
+# using no_log to hide the password that is being writien in plain text
+- name: Update MySQL root user authentication method
+  command: mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '{{ mysql_root_password }}';"
+  # ignore_errors: true
+  no_log: true
+
+- name: Restart mysql
+  service:
+    name: mysql
+    state: restarted

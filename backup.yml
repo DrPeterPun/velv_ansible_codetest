@@ -1,0 +1,8 @@
+---
+# Playbook to deploy all the stuff and its components
+- name: Install and deploy everything
+  hosts: localwebserver
+  gather_facts: false
+  become: true
+  roles:
+      - backup-database

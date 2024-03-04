@@ -1,0 +1,25 @@
+---
+
+- name: Create backup directory if it doesn't exist
+  file:
+    path: "{{ backup_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Generate list of databases for mysqldump
+  set_fact:
+    databases_list: "{{ backup_mysql_db_names | join(' ') }}"
+
+- name: Generate list of databases for file name
+  set_fact:
+    database_names: "{{ backup_mysql_db_names |  join('_') }}"
+
+# i think this puts the password in the bash logs but I dont know a better way
+# using no_log as a placeholder
+- name: Perform MySQL database backup
+  command: >
+    mysqldump -u {{ backup_mysql_user }} -p{{ backup_mysql_password }}
+    {{ databases_list }} >
+    {{ backup_dir }}/{{ database_names }}.sql
+  
+    no_log: true

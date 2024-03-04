@@ -1,0 +1,26 @@
+all:
+  children:
+    mcwebserver:
+      hosts:
+        minecraft.casahouse.pt:
+          ansible_user: peter
+    localwebserver:
+      hosts:
+        192.168.56.101:
+          ansible_user: vagrant
+      vars:
+        # should be using secrets
+        # not using right now for ease of use
+        mysql_root_password: "pass123"
+        ansible_python_interpreter: "/usr/bin/python3"
+        phpmyadmin_url: phpmyadmin
+        backup_mysql_db_names:
+          - database1
+          - database2
+        backup_mysql_user: root
+        # should be using secrets
+        # not using right now for ease of use
+        backup_mysql_password: "pass123"
+        backup_dir: /tmp/backup
+          
+        

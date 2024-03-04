@@ -1,0 +1,99 @@
+---
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+
+- name: Install nginx
+  apt:
+    name: nginx
+    state: present
+
+- name: Install php-fpm
+  apt:
+    name: php-fpm
+    state: present
+
+- name: Install php-mysql extension
+  apt:
+    name: php-mysql
+    state: present
+
+- name: Create a directory for the nginx configs
+  ansible.builtin.file:
+    path: /var/www/{{ ansible_ssh_host }}
+    state: directory
+    mode: '0755'
+
+- name: Copy the nginx domain file 
+  template:
+    src: nginxdomain
+    dest: /etc/nginx/sites-available/{{ ansible_ssh_host }}
+
+- name: Replace the placeholder flag with the host fqdn/ip
+  replace:
+    path: /etc/nginx/sites-available/{{ ansible_ssh_host }}
+    regexp: '<<your_domain>>'
+    replace: '{{ ansible_ssh_host }}'
+
+- name: Create symbolic link
+  file:
+    src: /etc/nginx/sites-available/{{ ansible_ssh_host }}
+    dest: /etc/nginx/sites-enabled/{{ ansible_ssh_host }}
+    state: link
+
+- name: Unlink default configuration
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+
+- name: Reload Nginx
+  systemd:
+    name: nginx
+    state: reloaded
+
+- name: Install debconf utilities
+  apt:
+    name: 
+      - debconf
+      - debconf-utils
+    state: present
+
+- name: Set debconf for phpmyadmin dbconfig-install
+  debconf:
+    name: phpmyadmin
+    question: 'phpmyadmin/dbconfig-install'
+    value: 'true'
+    vtype: 'boolean'
+
+- name: Set debconf for phpmyadmin mysql app-pass
+  debconf:
+    name: phpmyadmin
+    question: 'phpmyadmin/mysql/app-pass'
+    value: '{{ mysql_root_password }}'
+    vtype: 'password'
+
+- name: Set debconf for phpmyadmin app-password-confirm
+  debconf:
+    name: phpmyadmin
+    question: 'phpmyadmin/app-password-confirm'
+    value: '{{ mysql_root_password }}'
+    vtype: 'password'
+
+- name: Set debconf for phpmyadmin mysql admin-pass
+  debconf:
+    name: phpmyadmin
+    question: 'phpmyadmin/mysql/admin-pass'
+    value: '{{ mysql_root_password }}'
+    vtype: 'password'
+
+- name: Install phpmyadmin
+  apt:
+    name: phpmyadmin
+    state: present
+
+- name: Create symbolic link for phpMyAdmin
+  file:
+    src: /usr/share/phpmyadmin
+    dest: /var/www/{{ ansible_ssh_host }}/{{ phpmyadmin_url }}
+    state: link
